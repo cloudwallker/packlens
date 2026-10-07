@@ -1,0 +1,7 @@
+Package: proxy-agent-negotiate 1.1.0
+Declared license: MIT
+Package author: Nathan Rajlich <nathan@tootallnate.net> (http://n8.io/)
+Repository: https://github.com/TooTallNate/proxy-agents
+Repository directory: packages/negotiate
+
+The installed published package has no standalone license text; registry metadata has no gitHead. The current repository root and packages/negotiate/LICENSE also did not provide a license file during inspection. This notice preserves the actual package declaration and attribution. The missing release-specific license text is an unresolved upstream notice gap; no copyright or grant text has been invented. Dependency code is installed separately by npm and is not vendored into the PackLens tarball.

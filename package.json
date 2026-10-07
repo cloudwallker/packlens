@@ -1,0 +1,54 @@
+{
+  "name": "packlens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local npm package contents analysis with official file lists and rule evidence.",
+  "license": "MIT",
+  "bin": {
+    "packlens": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "compatibility.json",
+    "README.md",
+    "README_ZH.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "CHANGELOG.md",
+    "SUPPORT.md"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.ts",
+    "build": "tsc && node scripts/build-assets.mjs",
+    "test:browser": "node --test tests/browser.test.ts",
+    "licenses": "node scripts/license-notices.mjs"
+  },
+  "dependencies": {
+    "@npmcli/arborist": "10.0.3",
+    "@npmcli/package-json": "8.0.0",
+    "glob": "13.0.6",
+    "ignore-walk": "9.0.0",
+    "minimatch": "10.2.5",
+    "npm-normalize-package-bin": "6.0.0",
+    "npm-packlist": "11.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "npm": "12.2.0",
+    "playwright": "1.62.1",
+    "typescript": "7.0.2"
+  },
+  "overrides": {
+    "minimatch": "10.2.5"
+  },
+  "engines": {
+    "node": "24.15.0"
+  }
+}

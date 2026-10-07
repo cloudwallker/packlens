@@ -1,0 +1,17 @@
+{
+  "profileId": "npm-single-package-v1",
+  "node": "24.15.0",
+  "npm": "12.2.0",
+  "npm-packlist": "11.3.0",
+  "ignore-walk": "9.0.0",
+  "@npmcli/arborist": "10.0.3",
+  "adapterVersion": "packlens-recording-v1",
+  "glob": "13.0.6",
+  "minimatch": "10.2.5",
+  "@npmcli/package-json": "8.0.0",
+  "npm-normalize-package-bin": "6.0.0",
+  "sourceHashes": { "npm-packlist": "5d0f84da339159590d746d343d12cb7708add8ffc96841002fc67e87fd714505", "ignore-walk": "10610ac2fdc62669c21893f3ff772f2dc8b5831b54d80040629a121aae70c0d6" },
+  "mode": "standalone",
+  "lifecycleScripts": false,
+  "globalConfigApplied": false
+}

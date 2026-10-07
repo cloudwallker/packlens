@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "mustShip": [
+    "child/template.html"
+  ],
+  "mustNotShip": [
+    "blocked/**",
+    "root.asset"
+  ]
+}

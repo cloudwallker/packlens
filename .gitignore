@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+.npmrc
+reports/
+.packlens-tmp/
+*.tgz
+playwright-report/
+test-results/

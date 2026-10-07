@@ -1,0 +1,23 @@
+[
+  {
+    "profileId": "npm-single-package-v1",
+    "files": [
+      "dist/index.js",
+      "package.json"
+    ],
+    "assertions": [
+      "fail"
+    ]
+  },
+  {
+    "profileId": "npm-single-package-v1",
+    "files": [
+      "dist/index.js",
+      "dist/style.css",
+      "package.json"
+    ],
+    "assertions": [
+      "pass"
+    ]
+  }
+]

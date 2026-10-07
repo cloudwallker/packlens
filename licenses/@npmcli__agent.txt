@@ -1,0 +1,7 @@
+Package: @npmcli/agent 5.0.2
+Declared license: ISC
+Package author: GitHub Inc.
+Repository: https://github.com/npm/agent
+Release gitHead: 3fadae4d3ea4cc6c73003db2b42456afab9e3cdd
+
+The installed published package and repository root at this release do not contain a standalone license text. This notice preserves the actual package declaration and attribution. The missing release-specific license text is an unresolved upstream notice gap; no copyright or grant text has been invented. Dependency code is installed separately by npm and is not vendored into the PackLens tarball.

@@ -1,0 +1,27 @@
+[
+  {
+    "profileId": "npm-single-package-v1",
+    "files": [
+      "code/index.js",
+      "package.json"
+    ],
+    "assertions": [
+      "fail",
+      "pass",
+      "pass"
+    ]
+  },
+  {
+    "profileId": "npm-single-package-v1",
+    "files": [
+      "child/template.html",
+      "code/index.js",
+      "package.json"
+    ],
+    "assertions": [
+      "pass",
+      "pass",
+      "pass"
+    ]
+  }
+]

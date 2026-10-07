@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "op": "replaceIgnoreText",
+      "path": ".npmignore",
+      "value": ""
+    }
+  ]
+}

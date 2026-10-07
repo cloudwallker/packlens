@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "mustNotShip": [
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "main.js",
+    "cli.js"
+  ]
+}

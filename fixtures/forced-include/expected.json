@@ -1,0 +1,36 @@
+[
+  {
+    "profileId": "npm-single-package-v1",
+    "files": [
+      "LICENSE",
+      "README.md",
+      "cli.js",
+      "main.js",
+      "package.json"
+    ],
+    "assertions": [
+      "fail",
+      "fail",
+      "fail",
+      "fail",
+      "fail"
+    ]
+  },
+  {
+    "profileId": "npm-single-package-v1",
+    "files": [
+      "LICENSE",
+      "README.md",
+      "cli.js",
+      "main.js",
+      "package.json"
+    ],
+    "assertions": [
+      "fail",
+      "fail",
+      "fail",
+      "fail",
+      "fail"
+    ]
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "name": "packlens-demo-empty-glob",
+  "version": "1.0.0",
+  "files": [
+    "distt/**"
+  ],
+  "scripts": {
+    "prepack": "node -e \"require('node:fs').writeFileSync('LIFECYCLE_RAN','unexpected')\"",
+    "prepare": "node -e \"require('node:fs').writeFileSync('LIFECYCLE_RAN','unexpected')\"",
+    "postpack": "node -e \"require('node:fs').writeFileSync('LIFECYCLE_RAN','unexpected')\""
+  }
+}

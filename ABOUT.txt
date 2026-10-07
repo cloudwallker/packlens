@@ -1,0 +1,1 @@
+Explain npm package contents locally with rule evidence, virtual edits, shipping assertions and raw-byte budgets. | 本地解释 npm 入包规则，虚拟试改打包配置，检查交付内容与原始字节预算。

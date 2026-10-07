@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "operations": [
+    {
+      "op": "removeIgnoreLine",
+      "path": "child/.npmignore",
+      "line": 2,
+      "expected": "*.html"
+    }
+  ]
+}
