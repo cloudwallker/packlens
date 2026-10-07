@@ -19,10 +19,11 @@ test('snapshot captures byte metadata without an absolute root or ordinary body'
 });
 
 test('root enumeration case collisions are uncovered before accepting a collection', async () => {
-  const f=await fixture({'a.js':'a'}); const original=fs.readdir;
+  const f=await fixture({'A.js':'a'}); const original=fs.readdir;
+  const canonicalRoot=await fs.realpath(f.root); let injected=false;
   try {
-    fs.readdir=(async (path:any,...args:any[])=>{ const names=await (original as any)(path,...args); return path===f.root ? [...names,'A.js'] : names; }) as typeof fs.readdir;
-    const s=await snapshotPackage(f.root); assert.ok(s.uncoveredInputs.includes('CASE_COLLISION'));
+    fs.readdir=(async (path:any,...args:any[])=>{ const names=await (original as any)(path,...args); if(path!==canonicalRoot)return names; injected=true; return [...names,'a.js']; }) as typeof fs.readdir;
+    const s=await snapshotPackage(f.root); assert.equal(injected,true); assert.ok(s.uncoveredInputs.includes('CASE_COLLISION'));
   } finally { fs.readdir=original; await f.cleanup(); }
 });
 
