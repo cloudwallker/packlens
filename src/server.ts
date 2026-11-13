@@ -6,6 +6,7 @@ import { AnalysisCancelledError, throwIfCancelled } from './cancellation.ts';
 import { toPublicReport } from './serialization.ts';
 import { renderHtml, safeJson } from './report.ts';
 import type { Intent, PackReport, Patch } from './model.ts';
+import {listenForBrowser,validateBrowserPort} from './browser-ports.ts';
 
 export interface ServerOptions { intent?:Intent; port?:number; locale?:'zh-CN'|'en' }
 export interface ServerHandle { address:'127.0.0.1'; port:number; close:()=>Promise<void> }
@@ -34,7 +35,7 @@ function editorState(report:PackReport):EditorState{
 }
 /** The only filesystem root is fixed at startup. Clients send patches, never reports. */
 export async function servePackage(dir:string,options:ServerOptions={}):Promise<ServerHandle>{
-  if(options.port!==undefined&&(!Number.isInteger(options.port)||options.port<0||options.port>65535))throw new PackageInputError('INVALID_PORT');
+  validateBrowserPort(options.port===undefined?0:options.port);
   const session=await createScenarioSession(await snapshotPackage(dir),options.intent);
   const base=session.report,saved:PackReport[]=[];
   const credential=randomBytes(32).toString('hex');
@@ -113,11 +114,7 @@ export async function servePackage(dir:string,options:ServerOptions={}):Promise<
     void operation.finally(()=>pending.delete(operation));
   });
   server.requestTimeout=35_000;server.headersTimeout=10_000;
-  await new Promise<void>((resolve,reject)=>{
-    server.once('error',reject);
-    server.listen(options.port??0,'127.0.0.1',()=>{server.off('error',reject);resolve();});
-  });
-  const port=(server.address() as {port:number}).port;origin=`http://127.0.0.1:${port}`;
+  const port=await listenForBrowser(server,options.port??0);origin=`http://127.0.0.1:${port}`;
   const close=()=>{
     if(closePromise)return closePromise;
     closing=true;

@@ -57,6 +57,8 @@ node dist/cli.js demo nested-ignore --html ../nested.html
 node dist/cli.js --version
 ```
 
+默认自动分配端口（也可显式传入 `--port 0`）会跳过浏览器禁用的端口。显式指定 `6666` 等禁用端口时返回 `BROWSER_RESTRICTED_PORT`；自动分配连续命中禁用端口时，会释放监听并返回 `BROWSER_PORT_UNAVAILABLE`。
+
 输出文件放在分析根目录之外，覆盖文件需显式添加 `--overwrite`。`--output-json <path>` 保存公开 JSON；`--strict-explanations` 要求解释覆盖；`--locale zh-CN|en` 选择语言。可选 `serve --open` 使用 Windows 默认浏览器，其他平台对该选项返回 `OPEN_UNSUPPORTED`。
 
 退出码：`0` 完整且通过，`1` 确定断言失败，`2` 未知/未覆盖/过时/超限或严格解释失败，`3` 输入或运行错误。优先级为 `3 > 2 > 1 > 0`。`forced-include` 试改后仍有预期断言失败，因此 demo 返回 `1`。
@@ -89,6 +91,8 @@ mustShip 要求全部已有匹配项入包，零匹配失败；mustNotShip 要�
 [fixtures](fixtures/) 包含实体 package、意图、patch、固定预期清单与复制即用命令。每个基础/试改都比较影子官方清单、记录 walker、实体官方清单及 npm 12.2.0 CLI 四方集合；生命周期哨兵验证脚本没有执行。
 
 ## API 与兼容范围
+
+开发检查依次运行 `npm ci --ignore-scripts --no-audit --no-fund`、`npm run build`、`npx --no-install playwright install chromium` 和 `npm test`。Chromium 安装必须匹配锁定的 Playwright 版本。浏览器启动失败时，测试仍会关闭本地服务器并清理临时目录，使缺少浏览器的问题正常报错并退出。
 
 通过 `snapshotPackage`、`createScenarioSession`、`session.apply/undo/reset` 管理场景；`toPublicReport(report,{omitRuleText:true})` 导出公开数据；`renderHtml(baseline,{scenarios:[patched],omitRuleText:true})` 生成离线页。[英文 API 示例](README.md#api)可直接使用。
 

@@ -57,7 +57,7 @@ node dist/cli.js demo nested-ignore --html ../nested.html
 node dist/cli.js --version
 ```
 
-Report outputs must be outside the analyzed root. Existing files require `--overwrite`. `--output-json <path>` saves the public JSON projection. `--strict-explanations` requires covered file explanations; `--locale zh-CN|en` selects language. `serve --open` uses the Windows default browser; other platforms return `OPEN_UNSUPPORTED` for that optional flag.
+Report outputs must be outside the analyzed root. Existing files require `--overwrite`. `--output-json <path>` saves the public JSON projection. `--strict-explanations` requires covered file explanations; `--locale zh-CN|en` selects language. `serve --open` uses the Windows default browser; other platforms return `OPEN_UNSUPPORTED` for that optional flag. Automatic `--port 0` allocation retries browser-restricted ports; explicitly requesting one, such as `6666`, returns `BROWSER_RESTRICTED_PORT`. If automatic allocation repeatedly yields restricted ports, the server closes them and returns `BROWSER_PORT_UNAVAILABLE`.
 
 Exit codes are `0` complete/pass, `1` definite assertion failure, `2` unknown/uncovered/stale/limit or strict explanation failure, and `3` invalid input or execution error. Priority is `3 > 2 > 1 > 0`. The `forced-include` demo intentionally returns `1` after its patch because forced files still ship.
 
@@ -105,6 +105,8 @@ const json = toPublicReport(patched, {omitRuleText:true});
 Use the public projection for exports. Internal reports include trusted engine state. `servePackage(dir, options)` returns the actual loopback address, port and asynchronous `close()` method. Compute/editor routes use a temporary in-memory session credential, exact Host checks, origin checks, bounded JSON, and revision checks. Exported HTML excludes live credentials. The server keeps the baseline plus the latest 20 successful scenes for HTML export.
 
 ## Compatibility and evidence
+
+For development checks, run `npm ci --ignore-scripts --no-audit --no-fund`, `npm run build`, `npx --no-install playwright install chromium`, then `npm test`. The Chromium installation must match the locked Playwright version. Browser tests close their local servers and temporary directories even if browser startup fails, so a missing browser reports a failure and the test process exits.
 
 `npm-single-package-v1` fixes Node **24.15.0**, npm-packlist **11.3.0**, ignore-walk **9.0.0**, and Arborist **10.0.3**, with locked transitive dependencies and source checks. npm **12.2.0** is the development comparison oracle and is optional at runtime. Membership and explanation confidence are separate: verified membership can coexist with unknown evidence; unsupported inputs preserve unknown assertions.
 

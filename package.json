@@ -25,7 +25,7 @@
     "SUPPORT.md"
   ],
   "scripts": {
-    "test": "node --test tests/*.test.ts",
+    "test": "node --test --test-concurrency=1 tests/*.test.ts",
     "build": "tsc && node scripts/build-assets.mjs",
     "test:browser": "node --test tests/browser.test.ts",
     "licenses": "node scripts/license-notices.mjs"

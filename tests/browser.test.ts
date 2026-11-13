@@ -14,9 +14,10 @@ async function fingerprints(root:string,prefix=''):Promise<string[]>{const found
 
 test('real browser: live CSS edit, undo/reset, export, offline scenes, source pointers, keyboard and narrow layout', {timeout:120_000},async()=>{
  const root=resolve('fixtures/css-missing/package'),before=await fingerprints(root),intent=JSON.parse(await readFile('fixtures/css-missing/intent.json','utf8'));
- const server=await servePackage(root,{intent}),folder=await mkdtemp(join(tmpdir(),'packlens-browser-'));
- const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport:{width:1440,height:1080},acceptDownloads:true}),page=await context.newPage();const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ const server=await servePackage(root,{intent});let folder:string|undefined,browser:Awaited<ReturnType<typeof chromium.launch>>|undefined;
  try{
+  folder=await mkdtemp(join(tmpdir(),'packlens-browser-'));
+  browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:1440,height:1080},acceptDownloads:true}),page=await context.newPage();const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`http://${server.address}:${server.port}/`);await page.waitForFunction(()=>document.querySelector('#rule-editor')?.textContent!==undefined&&!(document.querySelector('main')?.getAttribute('aria-busy')==='true'));
   await page.locator('#edit-target').selectOption('dist/.npmignore');assert.equal(await page.locator('#rule-editor').inputValue(),'# styles\n*.css\n');
   assert.match(await page.getByRole('button',{name:'dist 目录',exact:false}).innerText(),/3 文件 · 1 已包含/);
@@ -43,12 +44,13 @@ test('real browser: live CSS edit, undo/reset, export, offline scenes, source po
   await page.locator('#search').focus();await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement?.id),'status-filter');assert.notEqual(await page.locator('#status-filter').evaluate(e=>getComputedStyle(e).outlineStyle),'none');
   if(process.env.PACKLENS_CAPTURE_SCREENSHOTS)await page.screenshot({path:'docs/images/css-saved-390.png',fullPage:true});
   assert.deepEqual(errors,[]);
- }finally{await browser.close();await server.close();await rm(folder,{recursive:true,force:true});}
+ }finally{try{await browser?.close();}finally{try{await server.close();}finally{if(folder)await rm(folder,{recursive:true,force:true});}}}
 });
 
 test('all six computed demos render saved comparisons offline; hostile text and large trees stay usable',{timeout:120_000},async()=>{
- const folder=await mkdtemp(join(tmpdir(),'packlens-browser-scenes-')),browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport:{width:390,height:844}});await context.setOffline(true);const page=await context.newPage(),errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ const folder=await mkdtemp(join(tmpdir(),'packlens-browser-scenes-'));let browser:Awaited<ReturnType<typeof chromium.launch>>|undefined;
  try{
+  browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844}});await context.setOffline(true);const page=await context.newPage(),errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   for(const name of demoNames){const demo=await runDemo(name),file=join(folder,name+'.html');await writeFile(file,renderHtml(demo.baseline,{scenarios:[demo.patched]}));await page.goto(pathToFileURL(file).href);assert.equal(await page.locator('#scenario option').count(),2);for(const index of [0,1]){await page.locator('#scenario').selectOption(String(index));assert.equal(await page.locator('#assertions .assertion').count(),[demo.baseline,demo.patched][index].scenario.assertions.length);}assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
   const demo=await runDemo('css-missing'),hostile='evil</script><script>globalThis.injected=1</script>';
   const report=demo.baseline;report.entries.push({...report.entries[0],path:hostile});const source=report.ruleSources.find(s=>s.path==='dist/.npmignore'&&s.line===2)!;source.text=hostile;
@@ -56,5 +58,5 @@ test('all six computed demos render saved comparisons offline; hostile text and 
   const file=join(folder,'hostile.html');await writeFile(file,renderHtml(report));await page.goto(pathToFileURL(file).href);assert.ok(await page.locator('.entry').count()<=100);await page.getByRole('button',{name:'下一页',exact:true}).click();assert.match(await page.locator('.pager').innerText(),/2\/3/);
   await page.locator('#search').fill('evil');assert.equal(await page.locator('.entry').count(),1);assert.match(await page.locator('.entry').innerText(),/evil<\/script>/);assert.equal(await page.evaluate(()=>Object.hasOwn(globalThis,'injected')),false);
   await page.locator('#search').fill('style.css');await page.getByRole('button',{name:'dist/style.css',exact:false}).click();await page.getByRole('button',{name:'dist/.npmignore:2',exact:true}).click();assert.match(await page.locator('#evidence').innerText(),/evil<\/script>/);assert.equal(await page.evaluate(()=>Object.hasOwn(globalThis,'injected')),false);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.deepEqual(errors,[]);
- }finally{await browser.close();await rm(folder,{recursive:true,force:true});}
+ }finally{try{await browser?.close();}finally{await rm(folder,{recursive:true,force:true});}}
 });
