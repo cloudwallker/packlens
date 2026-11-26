@@ -2,7 +2,7 @@
 
 [简体中文](README_ZH.md)
 
-**Explain npm package contents locally, trace rule evidence, try virtual edits, and check shipping assertions and raw-byte budgets.**
+**Explain npm package contents locally, trace rule evidence, try virtual edits, and check shipping assertions and raw-byte budgets for selected files.**
 
 PackLens 是本地 npm 入包原因解释器，核对官方清单，展示规则证据，支持虚拟试改、交付断言与原始字节预算。
 
@@ -64,10 +64,12 @@ Exit codes are `0` complete/pass, `1` definite assertion failure, `2` unknown/un
 ## Shipping intent and edits
 
 ```json
-{"schemaVersion":1,"mustShip":["dist/style.css","templates/**/*.html"],"mustNotShip":["tests/**"],"sizeBudget":{"maxRawBytes":"1048576"}}
+{"schemaVersion":1,"mustShip":["dist/style.css","templates/**/*.html"],"mustNotShip":["tests/**"],"sizeBudget":{"maxRawBytes":"1048576","include":["dist/**"],"exclude":["**/*.map"]}}
 ```
 
 `mustShip` requires every existing match to ship and fails on zero matches. `mustNotShip` requires zero shipped matches. Budgets use exact integer raw bytes; equality passes. Intent selectors support literal paths, `*`, `**`, and `?`; they have a separate defined matcher from npm's `files` semantics.
+
+The example counts shipped files under `dist/` after removing source maps from the budget. Omit `include` to start with the whole package. Exclusions take precedence over all includes and apply only to the budget. Its JSON result lists local files matching the scope in `matchedExistingPaths` and the official package members in `matchedShippedPaths`. Only shipped files contribute bytes.
 
 ```json
 {"schemaVersion":1,"operations":[{"op":"removeIgnoreLine","path":"dist/.npmignore","line":2,"expected":"*.css"}]}
