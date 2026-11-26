@@ -18,8 +18,8 @@ export type PatchOperation =
   | { op:'createIgnore'; path:string; value:string }
   | { op:'deleteIgnore'; path:string; expected?:string };
 export interface Patch { schemaVersion:1; baseSnapshotId?:string; expectedRevision?:number; operations:PatchOperation[] }
-export interface Intent { schemaVersion:1; mustShip?:string[]; mustNotShip?:string[]; sizeBudget?:{ maxRawBytes:string; include?:string[] } }
-export interface AssertionResult { assertionId: string; type: 'mustShip' | 'mustNotShip' | 'sizeBudget'; selector: string | string[]; matchedExistingPaths: string[]; matchedShippedPaths: string[]; status: 'pass' | 'fail' | 'unknown'; reasonCodes: string[]; bytesActual?: string; bytesLimit?: string }
+export interface Intent { schemaVersion:1; mustShip?:string[]; mustNotShip?:string[]; sizeBudget?:{ maxRawBytes:string; include?:string[]; exclude?:string[] } }
+export interface AssertionResult { assertionId: string; type: 'mustShip' | 'mustNotShip' | 'sizeBudget'; selector: string | string[]; excludedSelectors?: string[]; matchedExistingPaths: string[]; matchedShippedPaths: string[]; status: 'pass' | 'fail' | 'unknown'; reasonCodes: string[]; bytesActual?: string; bytesLimit?: string }
 export interface Delta { addedPaths: string[]; removedPaths: string[]; addedRawBytes: string; removedRawBytes: string; retainedContentByteChanges: { path: string; beforeRawBytes: string; afterRawBytes: string; deltaRawBytes: string }[]; netRawBytes: string }
 export interface Scenario { scenarioId: string; baseSnapshotId: string; revision: number; patch?: Patch; oracleFiles: string[]; tracedFiles: string[]; reconciliation: { status: 'equal' | 'conflict' | 'unavailable'; missing: string[]; extra: string[] }; aggregate: { rawBytes: string; fileCount: number }; assertions: AssertionResult[]; delta?: Delta }
 export interface PackReport { schemaVersion: 1; profile: RuntimeProfile; snapshot: Snapshot; entries: FileEntry[]; evidence: Evidence[]; ruleSources: RuleSource[]; diagnostics: Diagnostic[]; scenario: Scenario; complete: boolean }

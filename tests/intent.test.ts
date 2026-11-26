@@ -42,7 +42,39 @@ test('missing official entry bytes keep budget unknown instead of undercounting'
     const {evaluateIntent}=await api();const r=await analyzePackage(f.root);r.entries=r.entries.filter(e=>e.path!=='a.js');
     const results=evaluateIntent(r,{schemaVersion:1,sizeBudget:{maxRawBytes:'999'}});
     assert.equal(results[0].status,'unknown');assert.ok(results[0].reasonCodes.includes('BYTES_UNAVAILABLE'));
+    const [onlyA] = evaluateIntent(r,{schemaVersion:1,sizeBudget:{maxRawBytes:'999',include:['a.js']}});
+    assert.deepEqual(onlyA.matchedExistingPaths, []);
+    assert.deepEqual(onlyA.matchedShippedPaths, ['a.js']);
+    assert.ok(!onlyA.reasonCodes.includes('EMPTY_BUDGET_SCOPE'));
+    const [withoutA] = evaluateIntent(r,{schemaVersion:1,sizeBudget:{maxRawBytes:'999',exclude:['a.js']}});
+    assert.equal(withoutA.status, 'pass');
   }finally{await f.cleanup();}
+});
+
+test('budget scope distinguishes local matches from shipped files and applies exclusions last', async () => {
+  const f = await fixture({'dist/app.js':'abc', 'dist/app.js.map':'12345', 'dist/local.txt':'draft'},
+    {files:['dist/app.js', 'dist/app.js.map']});
+  try {
+    const {evaluateIntent, validateIntent} = await api();
+    const report = await analyzePackage(f.root);
+    const sizeBudget = {maxRawBytes:'8', include:['dist/**']};
+    const [all] = evaluateIntent(report, {schemaVersion:1, sizeBudget});
+    assert.deepEqual(all.matchedExistingPaths, ['dist/app.js', 'dist/app.js.map', 'dist/local.txt']);
+    assert.deepEqual(all.matchedShippedPaths, ['dist/app.js', 'dist/app.js.map']);
+    assert.equal(all.bytesActual, '8');
+    const [scripts] = evaluateIntent(report, {schemaVersion:1, sizeBudget:{...sizeBudget,
+      maxRawBytes:'3', include:['dist/**', 'dist/app.js.map'], exclude:['**/*.map']}});
+    assert.deepEqual(scripts.matchedExistingPaths, ['dist/app.js', 'dist/local.txt']);
+    assert.deepEqual(scripts.matchedShippedPaths, ['dist/app.js']);
+    assert.deepEqual(scripts.excludedSelectors, ['**/*.map']);
+    assert.equal(scripts.bytesActual, '3');
+    assert.equal(scripts.status, 'pass');
+    const [empty] = evaluateIntent(report, {schemaVersion:1, sizeBudget:{maxRawBytes:'0', exclude:['**']}});
+    assert.equal(empty.bytesActual, '0');
+    assert.ok(empty.reasonCodes.includes('EMPTY_BUDGET_SCOPE'));
+    assert.throws(() => validateIntent({schemaVersion:1, sizeBudget:{maxRawBytes:'0', exclude:'*.map'}}), /INVALID_INTENT/);
+    assert.throws(() => validateIntent({schemaVersion:1, sizeBudget:{maxRawBytes:'0', exclude:['dir//file']}}), /INVALID_SELECTOR/);
+  } finally { await f.cleanup(); }
 });
 
 test('intent evaluation observes caller deadline before returning any partial passing rows',async()=>{

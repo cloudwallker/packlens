@@ -249,6 +249,7 @@ export function reportClient() {
     for(const a of r.scenario.assertions){
       const row=make('article','','assertion');
       row.append(make('strong',`${a.status==='pass'?'✓':a.status==='fail'?'×':'?'} ${a.type} · ${a.status}`,a.status),make('p',typeof a.selector==='string'?a.selector:a.selector.join(', '),'path'),make('p',`${a.reasonCodes.join(', ')}${a.bytesActual!==undefined?' · '+a.bytesActual+' / '+a.bytesLimit+' B':''}`));
+      if (a.excludedSelectors?.length) row.append(make('p', t('预算排除', 'Excluded from budget') + ': ' + a.excludedSelectors.join(', '), 'path'));
       assertions.append(row);
     }if(!r.scenario.assertions.length)assertions.append(make('p',t('本场景未指定意图。','No intent supplied.')));
   }

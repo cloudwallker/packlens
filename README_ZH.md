@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-**PackLens 是本地 npm 入包原因解释器，核对官方清单，展示规则证据，支持虚拟试改、交付断言与原始字节预算。**
+**PackLens 是本地 npm 入包原因解释器，核对官方清单，展示规则证据，支持虚拟试改、交付断言，也能为选定文件检查原始字节预算。**
 
 Explain npm package contents locally, trace rule evidence, try virtual edits, and check shipping assertions and raw-byte budgets.
 
@@ -66,10 +66,12 @@ node dist/cli.js --version
 ## 交付意图与规则试改
 
 ```json
-{"schemaVersion":1,"mustShip":["dist/style.css","templates/**/*.html"],"mustNotShip":["tests/**"],"sizeBudget":{"maxRawBytes":"1048576"}}
+{"schemaVersion":1,"mustShip":["dist/style.css","templates/**/*.html"],"mustNotShip":["tests/**"],"sizeBudget":{"maxRawBytes":"1048576","include":["dist/**"],"exclude":["**/*.map"]}}
 ```
 
 mustShip 要求全部已有匹配项入包，零匹配失败；mustNotShip 要求没有入包匹配项。预算使用精确整数原始字节，等于上限通过。意图匹配器支持字面路径、`*`、`**`、`?`，与 npm `files` 的匹配语义分别定义。
+
+示例统计 `dist/` 下已入包文件的字节数，同时从预算中排除 source map。省略 `include` 时从整个包开始筛选。`exclude` 优先于所有包含项，仅影响预算。JSON 结果中的 `matchedExistingPaths` 列出预算范围内本地存在的文件，`matchedShippedPaths` 列出实际入包的文件。总字节数只统计后者。
 
 ```json
 {"schemaVersion":1,"operations":[{"op":"removeIgnoreLine","path":"dist/.npmignore","line":2,"expected":"*.css"}]}

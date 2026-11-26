@@ -14,8 +14,12 @@ export function validateIntent(value: unknown): asserts value is Intent {
   }
   if (value.sizeBudget !== undefined) {
     const b=value.sizeBudget;
-    if (!object(b) || !keys(b,['maxRawBytes','include']) || typeof b.maxRawBytes !== 'string' || !/^\d+$/.test(b.maxRawBytes)) throw new PackageInputError('INVALID_INTENT');
-    if (b.include !== undefined) { if (!Array.isArray(b.include)) throw new PackageInputError('INVALID_INTENT'); for (const selector of b.include) validateSelector(selector); }
+    if (!object(b) || !keys(b,['maxRawBytes','include','exclude']) || typeof b.maxRawBytes !== 'string' || !/^\d+$/.test(b.maxRawBytes)) throw new PackageInputError('INVALID_INTENT');
+    for (const selectors of [b.include, b.exclude]) {
+      if (selectors === undefined) continue;
+      if (!Array.isArray(selectors)) throw new PackageInputError('INVALID_INTENT');
+      for (const selector of selectors) validateSelector(selector);
+    }
   }
 }
 // '*' and '?' consume characters only within one segment. '**' is a complete
@@ -71,15 +75,29 @@ export function evaluateIntent(report: PackReport, intent: Intent, options:Inten
     results.push({assertionId:`${type}:${results.length}`,type,selector,matchedExistingPaths:existing,matchedShippedPaths:included,status:protectedState?'unknown':fail?'fail':'pass',reasonCodes:reasons});
   }
   if(intent.sizeBudget) {
-    const budget=intent.sizeBudget, scope=files.filter(e=>shipped.has(e.path) && (budget.include===undefined || budget.include.some(s=>match(s,e.path))));
-    const reasons: string[]=[];let total=0n,unknown=protectedState;
-    const knownBytesPaths=new Set(scope.map(e=>e.path));
-    if([...shipped].some(p=>(budget.include===undefined || budget.include.some(s=>match(s,p))) && !knownBytesPaths.has(p))){unknown=true;reasons.push('BYTES_UNAVAILABLE');}
-    for(const e of scope) {checkDeadline();if(!/^\d+$/.test(e.rawBytes)){unknown=true;reasons.push('BYTES_UNAVAILABLE');} else total+=BigInt(e.rawBytes); }
-    if(!scope.length && budget.include!==undefined)reasons.push('EMPTY_BUDGET_SCOPE');
+    const budget = intent.sizeBudget;
+    const inScope = (path:string) =>
+      (budget.include === undefined || budget.include.some(selector => match(selector, path))) &&
+      !budget.exclude?.some(selector => match(selector, path));
+    const bytesByPath = new Map(files.filter(entry => inScope(entry.path)).map(entry => [entry.path, entry.rawBytes]));
+    const matchedExistingPaths = [...bytesByPath.keys()].sort();
+    const matchedShippedPaths = [...shipped].filter(inScope).sort();
+    const reasons: string[] = [];
+    let total = 0n;
+    for (const path of matchedShippedPaths) {
+      checkDeadline();
+      const bytes = bytesByPath.get(path);
+      if (bytes !== undefined && /^\d+$/.test(bytes)) total += BigInt(bytes);
+      else if (!reasons.includes('BYTES_UNAVAILABLE')) reasons.push('BYTES_UNAVAILABLE');
+    }
+    const unknown = protectedState || reasons.includes('BYTES_UNAVAILABLE');
+    if (!matchedShippedPaths.length && (budget.include !== undefined || budget.exclude?.length)) reasons.push('EMPTY_BUDGET_SCOPE');
     if(unknown)reasons.push('RESULT_UNKNOWN');
     const exceeded=total>BigInt(budget.maxRawBytes);if(exceeded)reasons.push('BUDGET_EXCEEDED');
-    results.push({assertionId:`sizeBudget:${results.length}`,type:'sizeBudget',selector:budget.include ?? ['**/*'],matchedExistingPaths:scope.map(e=>e.path).sort(),matchedShippedPaths:scope.map(e=>e.path).sort(),status:unknown?'unknown':exceeded?'fail':'pass',reasonCodes:reasons,bytesActual:unknown?undefined:total.toString(),bytesLimit:budget.maxRawBytes});
+    results.push({assertionId:`sizeBudget:${results.length}`, type:'sizeBudget', selector:budget.include ?? ['**/*'],
+      ...(budget.exclude?.length ? {excludedSelectors:[...budget.exclude]} : {}),
+      matchedExistingPaths, matchedShippedPaths, status:unknown?'unknown':exceeded?'fail':'pass',
+      reasonCodes:reasons, bytesActual:unknown?undefined:total.toString(), bytesLimit:budget.maxRawBytes});
   }
   checkDeadline();return results;
 }
